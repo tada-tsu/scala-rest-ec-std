@@ -1,0 +1,1058 @@
+openapi: 3.0.1
+info:
+  title: 練習EC - Scala
+  description: '学習目的のECサイトです'
+  contact:
+    email: ono.tadatsugu@donuts.ne.jp
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 0.1.0
+servers:
+- url: https://localhost:6789/v1
+tags:
+- name: Auth
+  description: 認証/ユーザー関連API
+- name: Store
+  description: ストア系API
+- name: Dashboard
+  description: 管理画面API
+  
+# -------------- Endpoints --------------
+paths:
+
+  # -------------- Auth --------------
+  /login:
+    post:
+      tags:
+      - Auth
+      summary: ログイン
+      operationId: login
+      requestBody:
+        description: Login object that needs to be logged in to this website
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+        required: true
+      responses:
+        400:
+          description: Bad Request
+        201:
+          description: Token created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+                
+  /me:
+    get:
+      tags:
+      - Auth
+      summary: 自分の情報を取得
+      operationId: getMyData
+      security: 
+      - BearerAuth: []
+      parameters:
+      - name: token
+        in: header
+        schema:
+          type: string
+      responses:
+        405:
+          description: Method Not Allowed
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  /me/thumbnail:
+    put:
+      tags: 
+      - Auth
+      summary: アイコン画像変更
+      operationId: changeMyThumbnail
+      security: 
+      - BearerAuth: []
+      requestBody:
+        description: 画像バイナリ
+        content:
+          image/png:
+            schema:
+              type: string
+              format: binary
+          image/jpeg:
+            schema:
+              type: string
+              format: binary
+          image/gif:
+            schema:
+              type: string
+              format: binary
+      responses:
+        500:
+          description: Internal Server Error
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: 
+                    type: string
+                    enum: 
+                      - success
+                      
+  /me/profile:
+    patch:
+      tags: 
+      - Auth
+      summary: プロフィール変更
+      operationId: changeMyProfiles
+      security: 
+      - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        200: 
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+                
+  # -------------- Store --------------
+  /store/overview:
+    get:
+      tags:
+      - Store
+      summary: ロゴなど、雑多な情報の取得
+      operationId: getOverview
+      parameters: 
+      - name: mode
+        in: query
+        description: 取得する情報の種類
+        schema:
+          type: string
+          enum: 
+            - all
+            - logo
+            - store_name
+            - slides
+            - pickups
+            - menu
+            - footer_links
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Overview'
+                
+  /store/product:
+    get:
+      tags:
+      - Store
+      summary: 商品情報一覧
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+  /store/product/{product_id}:
+    get:
+      tags: 
+      - Store
+      summary: 商品情報取得
+      parameters: 
+        - name: product_id
+          in: path
+          description: 商品ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        404:
+          description: Not Found
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+  
+  
+  /store/cart:
+    get:
+      tags: 
+      - Store
+      summary: カート内の商品一覧取得
+      operationId: getProductsListInCart
+      security: 
+      - BearerAuth: []
+      parameters: 
+        - name: num
+          description: 取得商品数 ( 0は無制限 )
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 20
+            enum: 
+              - 0
+              - 1-20
+        - name: last_product_id
+          description: 取得開始商品id
+          in: query
+          schema:
+            type: integer
+        - name: direction
+          description: 商品取得方向 ( 0 - prev, 1 - next )
+          in: query
+          schema:
+            type: integer
+            enum: 
+              - 0
+              - 1
+      responses:
+        200:
+          description: カート内容（一部 or 全部）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+    
+  /store/cart/{product_id}:
+    post:
+      tags: 
+      - Store
+      summary: 商品をカートに追加
+      operationId: addProductToCart
+      security: 
+      - BearerAuth: []
+      parameters: 
+        - name: product_id
+          in: path
+          description: 商品ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+    delete:
+      tags: 
+      - Store
+      summary: 商品をカートから削除
+      operationId: removeProductInCart
+      security: 
+      - BearerAuth: []
+      parameters: 
+        - name: product_id
+          in: path
+          description: 商品ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+                
+  /store/order:
+    get: 
+      tags: 
+      - Store
+      summary: 注文一覧
+      operationId: getOrders
+      security: 
+      - BearerAuth: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: 
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+        403:
+          description: Forbidden
+    post: 
+      tags:
+      - Store
+      summary: 注文作成
+      operationId: createOrder
+      security: 
+      - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cart'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        403:
+          description: Forbidden
+      
+  /store/order/{order_id}:
+    get:
+      tags: 
+      - Store
+      summary: 注文情報取得
+      operationId: getMyOrderData
+      security: 
+      - BearerAuth: []
+      parameters: 
+        - name: order_id
+          in: path
+          description: 注文ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        403:
+          description: Forbidden
+    patch:
+      tags:
+      - Store
+      summary: 注文手続き
+      operationId: patchOrder
+      security: 
+      - BearerAuth: []
+      parameters: 
+        - name: order_id
+          in: path
+          description: 注文ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Order'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        403:
+          description: Forbidden
+          
+  /store/payment/{order_id}:
+    post:
+      tags: 
+      - Store
+      summary: 決済
+      security: 
+      - BearerAuth: []
+      parameters: 
+        - name: order_id
+          in: path
+          description: 注文ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Payment'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        500:
+          description: Internal Server Error
+        403:
+          description: Forbidden
+          
+  # -------------- Dashboard --------------
+  /admin/user:
+    get:
+      tags: 
+      - Dashboard
+      summary: ユーザーの一覧取得 (20件)
+      operationId: getAllUsersData
+      security: 
+      - BearerAuth: []
+      parameters: 
+      - name: p
+        in: query
+        description: page number
+        schema:
+          type: integer
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+    post:
+      tags: 
+      - Dashboard
+      summary: ユーザー作成
+      operationId: createNewUser
+      security: 
+      - BearerAuth: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  /admin/user/{user_id}:
+    get:
+      tags: 
+      - Dashboard
+      summary: ユーザー情報取得
+      operationId: getUserData
+      security: 
+      - BearerAuth: []
+      parameters: 
+        - name: user_id
+          in: path
+          description: user's ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    put:
+      tags:
+      - Dashboard
+      summary: ユーザー情報変更
+      operationId: editUser
+      security: 
+      - BearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          description: user's id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: user data object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        401:
+          description: Unauthorized
+        405:
+          description: Method Not Allowed
+        200:
+          description: Changed
+    delete:
+      tags: 
+      - Dashboard
+      parameters:
+        - name: user_id
+          in: path
+          description: user's id
+          required: true
+          schema:
+            type: integer
+      operationId: deleteUser
+      security: 
+      - BearerAuth: []
+      responses:
+        401:
+          description: Unauthorized
+        405:
+          description: Method Not Allowed
+        200:
+          description: Deleted
+  
+  /admin/product:
+    get:
+      tags: 
+      - Dashboard
+      summary: 商品一覧取得（20件）
+      operationId: getAllProductsData
+      security: 
+      - BearerAuth: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+    post:
+      tags: 
+      - Dashboard
+      summary: 商品作成
+      operationId: createNewProduct
+      security: 
+      - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+  /admin/product/{product_id}:
+    get:
+      tags: 
+      - Dashboard
+      summary: 商品情報取得
+      operationId: getProductData
+      security: 
+      - BearerAuth: []
+      parameters: 
+        - name: product_id
+          in: path
+          description: product's ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+    put:
+      tags:
+      - Dashboard
+      summary: 商品情報変更
+      operationId: editProduct
+      security: 
+      - BearerAuth: []
+      parameters:
+        - name: product_id
+          in: path
+          description: product's ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: user data object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        401:
+          description: Unauthorized
+        405:
+          description: Method Not Allowed
+        200:
+          description: Changed
+    delete:
+      tags: 
+      - Dashboard
+      summary: 商品削除
+      parameters:
+        - name: product_id
+          in: path
+          description: product's ID
+          required: true
+          schema:
+            type: integer
+      operationId: deleteProduct
+      security: 
+      - BearerAuth: []
+      responses:
+        401:
+          description: Unauthorized
+        405:
+          description: Method Not Allowed
+        200:
+          description: Deleted
+  
+  /admin/order:
+    get:
+      tags: 
+      - Dashboard
+      summary: 注文一覧取得（20件）
+      operationId: getAllOrdersData
+      security: 
+      - BearerAuth: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+    post:
+      tags: 
+      - Dashboard
+      summary: 注文作成
+      operationId: createNewOrder
+      security: 
+      - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+  /admin/order/{order_id}:
+    get:
+      tags: 
+      - Dashboard
+      summary: 注文情報取得
+      operationId: getOrderData
+      security: 
+      - BearerAuth: []
+      parameters: 
+        - name: order_id
+          in: path
+          description: order's ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+    put:
+      tags:
+      - Dashboard
+      summary: 注文情報変更
+      operationId: editOrder
+      security: 
+      - BearerAuth: []
+      parameters:
+        - name: order_id
+          in: path
+          description: Order's ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: user data object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        401:
+          description: Unauthorized
+        405:
+          description: Method Not Allowed
+        200:
+          description: Changed
+    delete:
+      tags: 
+      - Dashboard
+      summary: 注文削除
+      parameters:
+        - name: order_id
+          in: path
+          description: Order's ID
+          required: true
+          schema:
+            type: integer
+      operationId: deleteOrder
+      security: 
+      - BearerAuth: []
+      responses:
+        401:
+          description: Unauthorized
+        405:
+          description: Method Not Allowed
+        200:
+          description: Deleted
+
+  /admin/payment:
+    get:
+      tags: 
+      - Dashboard
+      summary:  決済一覧取得（20件）
+      operationId: getAllPaymentsData
+      security: 
+      - BearerAuth: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Payment'
+    post:
+      tags: 
+      - Dashboard
+      summary: 決済作成
+      operationId: createNewPayment
+      security: 
+      - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Payment'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+  /admin/payment/{payment_id}:
+    get:
+      tags: 
+      - Dashboard
+      summary: 決済情報取得
+      operationId: getPaymentData
+      security: 
+      - BearerAuth: []
+      parameters: 
+        - name: payment_id
+          in: path
+          description: payment's ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+    put:
+      tags:
+      - Dashboard
+      summary: 決済情報変更
+      operationId: editPayment
+      security: 
+      - BearerAuth: []
+      parameters:
+        - name: payment_id
+          in: path
+          description: Payment's ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: user data object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Payment'
+      responses:
+        401:
+          description: Unauthorized
+        405:
+          description: Method Not Allowed
+        200:
+          description: Changed
+    delete:
+      tags: 
+      - Dashboard
+      summary: 決済削除
+      parameters:
+        - name: payment_id
+          in: path
+          description: Payment's ID
+          required: true
+          schema:
+            type: integer
+      operationId: deletePayment
+      security: 
+      - BearerAuth: []
+      responses:
+        401:
+          description: Unauthorized
+        405:
+          description: Method Not Allowed
+        200:
+          description: Deleted
+          
+  /admin/overview:
+    get:
+      tags: 
+      - Dashboard
+      operationId: getAllOverviewsData
+      security: 
+      - BearerAuth: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Overview'
+    put:
+      tags: 
+      - Dashboard
+      operationId: setAllOverviewsData
+      security: 
+      - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Overview'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Overview'
+                
+# -------------- Components --------------
+    
+components:
+  schemas:
+  
+    Login:
+      type: object
+      properties:
+        login: 
+          type: string
+          description: email or user_id
+        pass: 
+          type: string
+          format: password
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: login token
+        token_expires:
+          type: string
+          format: date
+          description: token有効期限日
+        user:
+          $ref: "#/components/schemas/User"
+    
+    User:
+      type: object
+      description: user data object
+      properties:
+        id:
+          type: integer
+          format: int
+          description: user's id ( DB primary key )
+        name:
+          type: string
+          description: user's name
+        screen_name:
+          type: string
+          description: user's unique ID
+        email:
+          type: string
+          format: email
+          description: user's e-mail address
+        thumbnail:
+          type: object
+          properties:
+            src: 
+              type: string
+              format: uri
+          
+    Overview:
+      type: object
+      description: get several option values
+      properties:
+        logo:
+          type: string
+        store_name:
+          type: string
+        slides:
+          type: array
+          items: 
+            type: object
+            properties:
+              src: 
+                type: string
+              url: 
+                type: string
+              caption:
+                type: string
+                description: image caption
+        pickups:
+          type: string       
+        menu:
+          type: string
+        footer_links:
+          type: string
+          
+    Product:
+      type: object
+      description: product data
+      properties:
+        id:
+          type: integer
+          description: product_id
+        title:
+          type: integer
+          description: product name
+          example: "sample product title"
+        desciprtion:
+          type: string
+          description: product details explaination
+        price: 
+          type: integer
+          description: product price
+          example: 3000
+        sale_price:
+          type: integer
+          description: downed price
+          example: 2500
+        thumbnails:
+          type: array
+          items:
+            type: object
+            properties:
+              src: 
+                type: string
+                format: uri
+        stock:
+          type: integer
+          description: 在庫数
+          example: 10
+        created_at:
+          type: string
+          format: date-time
+          
+    Cart:
+      type: object
+      description: カート
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              item: 
+                $ref: "#/components/schemas/Product"
+              quantity:
+                type: integer
+        amount:
+          type: integer
+              
+    Order:
+      type: object
+      description: 注文
+      properties:
+        user_id:
+          type: integer
+          description: ユーザーのID
+        pat_type:
+          type: string
+          description: 決済手法
+          enum: 
+            - card
+        status:
+          type: string
+          description: 注文ステータス
+          enum: 
+            - CREATED
+            - CONFIRMED
+            - PAID
+        cart:
+          $ref: "#/components/schemas/Cart"
+        created_at:
+          type: string
+          format: date-time
+          description: 注文作成日
+
+    Payment:
+      type: object
+      properties:
+        type: 
+          type: string
+        token: 
+          type: string
+        expire: 
+          type: string
+          format: date
+
+          
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
