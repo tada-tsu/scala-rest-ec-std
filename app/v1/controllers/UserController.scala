@@ -16,7 +16,7 @@ class UserController @Inject()(ecc: ECControllerComponents)(implicit ec: Executi
 
   def index: Action[AnyContent] = ECAction.async {
     implicit request =>
-      logger.trace("index: ")
+      logger.info("index: ")
       Future {
         Ok(Json.toJson(
           User.all()

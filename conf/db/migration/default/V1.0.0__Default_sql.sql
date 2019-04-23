@@ -3,8 +3,8 @@
 CREATE TABLE `users` (
 	`id`	INT UNSIGNED	NOT NULL PRIMARY KEY AUTO_INCREMENT,
 	`name`	VARCHAR(32)	NOT NULL	COMMENT 'ユーザー名',
-	`screen_name`	VARCHAR(16)	NOT NULL	COMMENT 'ユーザーID',
-	`email`	VARCHAR(255)	NOT NULL	COMMENT 'メールアドレス',
+	`screen_name`	VARCHAR(16)	NOT NULL    UNIQUE	COMMENT 'ユーザーID',
+	`email`	VARCHAR(255)	NOT NULL    UNIQUE	COMMENT 'メールアドレス',
 	`password`	VARCHAR(255)	NOT NULL	COMMENT 'パスワード',
 	`thumbnail_id`	INT UNSIGNED	NULL	COMMENT 'アイコンのID'
 );
@@ -13,7 +13,7 @@ DROP TABLE IF EXISTS `assets`;
 
 CREATE TABLE `assets` (
 	`id`	INT UNSIGNED	NOT NULL PRIMARY KEY AUTO_INCREMENT,
-	`path`	MEDIUMTEXT	NOT NULL	COMMENT 'アセットまでのパス',
+	`path`	VARCHAR(800)	NOT NULL    UNIQUE	COMMENT 'アセットまでのパス',
 	`filename`	VARCHAR(255)	NULL	COMMENT 'ファイル名',
 	`type`	VARCHAR(255)	NULL	COMMENT 'どこで使われるか'
 );
@@ -23,13 +23,15 @@ DROP TABLE IF EXISTS `login_tokens`;
 CREATE TABLE `login_tokens` (
 	`id`	INT UNSIGNED	NOT NULL PRIMARY KEY AUTO_INCREMENT,
 	`token`	VARCHAR(255)	NOT NULL,
-	`user_id`	INT UNSIGNED	NOT NULL
+	`user_id`	INT UNSIGNED	NOT NULL,
+	`expired_at`    DATETIME    NOT NULL
 );
 
 DROP TABLE IF EXISTS `products`;
 
 CREATE TABLE `products` (
 	`id`	INT UNSIGNED	NOT NULL PRIMARY KEY AUTO_INCREMENT,
+	`path`  VARCHAR(32) NOT NULL    UNIQUE,
 	`title`	VARCHAR(255)	NOT NULL	DEFAULT 'no title'	COMMENT 'product_title',
 	`description`	LONGTEXT	NULL,
 	`stock`	INT UNSIGNED	NOT NULL,

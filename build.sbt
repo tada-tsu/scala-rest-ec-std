@@ -34,6 +34,10 @@ libraryDependencies ++= Seq(
   "org.scalikejdbc" %% "scalikejdbc-play-initializer" % "2.7.0-scalikejdbc-3.3"
 )
 
+// Security
+libraryDependencies += "org.springframework.security" % "spring-security-web" % "5.1.5.RELEASE"
+
+
 // The Play project itself
 lazy val root = (project in file("."))
   .enablePlugins(Common, PlayScala, GatlingPlugin)
