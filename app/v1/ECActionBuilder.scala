@@ -82,7 +82,7 @@ class ECActionBuilder @Inject()(messagesApi: MessagesApi, playBodyParsers: PlayB
 }
 
 /**
-  * Without auth
+  * With auth
   */
 
 class ECActionBuilderWithAuth @Inject()(messagesApi: MessagesApi, playBodyParsers: PlayBodyParsers)
@@ -156,12 +156,84 @@ class ECActionBuilderWithAuth @Inject()(messagesApi: MessagesApi, playBodyParser
 }
 
 /**
+  * With admin auth
+  */
+
+class ECActionBuilderWithAdminAuth @Inject()(messagesApi: MessagesApi, playBodyParsers: PlayBodyParsers)
+                                       (implicit val executionContext: ExecutionContext)
+  extends ActionBuilder[ECRequest, AnyContent]
+    with RequestMarkerContext
+    with HttpVerbs {
+  override val parser: BodyParser[AnyContent] = playBodyParsers.anyContent
+  type ECRequestBlock[A] = ECRequest[A] => Future[Result]
+
+  override def invokeBlock[A](request: Request[A],
+                              block: ECRequestBlock[A]): Future[Result] = {
+    Logger.info("Auth: Required auth.")
+
+    val future = block(new ECRequest(request, messagesApi))
+    val failed = Results.Status(403).apply(Json.obj(
+      "auth" -> "failed"
+    ))
+
+    future.map {
+      result =>
+        request.headers.get("Authorization") match {
+          case Some(authHeader) => {
+            Logger.trace(s"Auth: Header ${authHeader}")
+
+            val Pattern = """Bearer (.*)""".r
+            request.headers.get("Authorization").get match {
+
+              case Pattern(token) => {
+
+                Logger.debug(s"Auth: Bearer: ${token}")
+                request.headers.get("Authorization-User-Screen") match {
+
+                  case Some(screen_name) => {
+                    Logger.debug(s"Auth: screen_name ${screen_name}")
+
+                    User.tokenAuth(screen_name, token, true) match {
+                      case ValidAdmin() => {
+                        result
+                      }
+                      case _ => {
+                        failed
+                      }
+                    }
+                  }
+                  case _ => {
+                    failed
+                  }
+
+                }
+
+              }
+
+              case _ => {
+                failed
+              }
+
+            }
+
+          }
+
+          case None => {
+            failed
+          }
+        }
+    }
+  }
+}
+
+/**
   * Packages up the component dependencies for the ec controller.
   *
   * This is a good way to minimize the surface area exposed to the controller, so the
   * controller only has to have one thing injected.
   */
 case class ECControllerComponents @Inject()(ecActionBuilderWithAuth: ECActionBuilderWithAuth,
+                                            ecActionBuilderWithAdminAuth: ECActionBuilderWithAdminAuth,
                                             ecActionBuilder: ECActionBuilder,
                                             actionBuilder: DefaultActionBuilder,
                                             parsers: PlayBodyParsers,
@@ -180,4 +252,6 @@ class ECBaseController @Inject()(ecc: ECControllerComponents) extends BaseContro
   def ECAction: ECActionBuilder = ecc.ecActionBuilder
 
   def ECActionWithAuth: ECActionBuilderWithAuth = ecc.ecActionBuilderWithAuth
+
+  def ECActionWithAdminAuth: ECActionBuilderWithAdminAuth = ecc.ecActionBuilderWithAdminAuth
 }

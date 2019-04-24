@@ -23,5 +23,6 @@ class UserController @Inject()(ecc: ECControllerComponents)(implicit ec: Executi
         ))
       }
   }
+
 }
 

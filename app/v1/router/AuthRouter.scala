@@ -12,12 +12,14 @@ class AuthRouter @Inject()(controller: AuthController) extends SimpleRouter {
 
   override def routes: Routes = {
     case POST(p"/login") =>
-      controller.index
+      controller.login
+    case POST(p"/register") =>
+      controller.register
     case GET(p"/me") =>
       controller.me
-    case PUT(p"/me/thumbnail") =>
-      controller.setThumbnail
-    case PATCH(p"/me/profile") =>
-      controller.changeProfile
+//    case PUT(p"/me/thumbnail") =>
+//      controller.setThumbnail
+//    case PATCH(p"/me/profile") =>
+//      controller.changeProfile
   }
 }

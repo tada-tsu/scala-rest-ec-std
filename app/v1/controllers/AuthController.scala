@@ -1,11 +1,10 @@
 package v1.controllers
 
 import javax.inject.Inject
-import models.{User, UserProfile}
+import models.{RegisterUser, User, UserProfile}
 import play.api.Logger
 import play.api.libs.json._
 import play.api.mvc._
-import scalikejdbc.DB
 import v1.{ECBaseController, ECControllerComponents}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -14,7 +13,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class AuthController @Inject()(ecc: ECControllerComponents)(implicit ec: ExecutionContext) extends ECBaseController(ecc) {
 
 
-  def index: Action[AnyContent] = ECAction.async {
+  def login: Action[AnyContent] = ECAction.async {
     implicit request =>
       Future {
         request.body.asJson match {
@@ -56,7 +55,7 @@ class AuthController @Inject()(ecc: ECControllerComponents)(implicit ec: Executi
       }
   }
 
-  def me = ECActionWithAuth.async {
+  def me: Action[AnyContent] = ECActionWithAuth.async {
     implicit request => {
       Future {
         request.headers.get("Authorization-User-Screen") match {
@@ -78,20 +77,76 @@ class AuthController @Inject()(ecc: ECControllerComponents)(implicit ec: Executi
     }
   }
 
-  def setThumbnail = ECActionWithAuth.async {
+  def register: Action[AnyContent] = ECAction.async {
     implicit request =>
-    Future {
-      Ok("ok")
-    }
+
+      Future {
+        val json = request.body.asJson
+        json.map(
+          json =>
+            RegisterUser.form.bind(json).fold(
+              errors => {
+                BadRequest(Json.obj(
+                  "register" -> "failed",
+                  "errors" -> errors.errorsAsJson,
+                ))
+              },
+              form => {
+                User.register(form) match {
+                  case Some(user) => {
+                    Ok(Json.toJson(user))
+                  }
+                  case None => {
+                    BadRequest
+                  }
+                }
+
+              }
+            )
+        )
+          .getOrElse(
+            BadRequest
+          )
+      }
   }
 
-  def changeProfile = ECActionWithAuth.async {
-    implicit request =>
-    Future {
-//      わからん
-      Ok("ok")
-    }
-  }
+  //  def setThumbnail = ECActionWithAuth.async {
+  //    implicit request =>
+  //      Future {
+  //        Ok("ok")
+  //      }
+  //  }
+
+  //  def changeProfile = ECActionWithAuth.async {
+  //    implicit request =>
+  //      Future {
+  //        //      println(request.body)
+  //        println(request.body.asJson.get.validate[UserProfile])
+  //        request.body.asJson match {
+  //          case Some(json) => {
+  //            val profile = json.validate[UserProfile] match {
+  //              case p: JsSuccess[UserProfile] => p.get
+  //            }
+  //            request.headers.get("Authorization-User-Screen") match {
+  //              case Some(screen_name) => {
+  //                User.findByScreenName(screen_name) match {
+  //                  case Some(user) => {
+  //                    println(user)
+  //                    User.setProfile(user, profile, user.id)
+  //                    println(user)
+  //                  }
+  //                }
+  //              }
+  //            }
+  //
+  //            Ok("ok")
+  //          }
+  //          case None => {
+  //            BadRequest
+  //          }
+  //        }
+  //      }
+  //  }
 
 }
 

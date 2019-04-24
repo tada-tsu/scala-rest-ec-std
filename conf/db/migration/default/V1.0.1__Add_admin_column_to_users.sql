@@ -1,0 +1,1 @@
+alter table `users` add admin bit(1) not null DEFAULT b'0' comment '管理者フラグ' after password;
