@@ -13,6 +13,7 @@ GET        /                       controllers.HomeController.index
 
 # Admin
 ->         /v1/admin               v1.router.AdminUserRouter
+->         /v1/admin               v1.router.AdminOverviewRouter
 
 
 # Map static resources from the /public folder to the /assets URL path
