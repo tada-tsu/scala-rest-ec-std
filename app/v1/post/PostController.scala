@@ -1,7 +1,6 @@
 package v1.post
 
 import javax.inject.Inject
-
 import play.api.Logger
 import play.api.data.Form
 import play.api.libs.json.Json
@@ -15,7 +14,7 @@ case class PostFormInput(title: String, body: String)
   * Takes HTTP requests and produces JSON.
   */
 class PostController @Inject()(cc: PostControllerComponents)(implicit ec: ExecutionContext)
-    extends PostBaseController(cc) {
+  extends PostBaseController(cc) {
 
   private val logger = Logger(getClass)
 

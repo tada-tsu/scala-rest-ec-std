@@ -22,6 +22,22 @@ libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2
 libraryDependencies += "io.gatling.highcharts" % "gatling-charts-highcharts" % gatlingVersion(scalaBinaryVersion.value) % Test
 libraryDependencies += "io.gatling" % "gatling-test-framework" % gatlingVersion(scalaBinaryVersion.value) % Test
 
+libraryDependencies ++= Seq(
+  "org.flywaydb" %% "flyway-play" % "5.3.2"
+)
+
+// ScalikeJDBC
+libraryDependencies ++= Seq(
+  "mysql" % "mysql-connector-java" % "5.1.12",
+  "org.scalikejdbc" %% "scalikejdbc" % "3.3.2",
+  "org.scalikejdbc" %% "scalikejdbc-config" % "3.3.2",
+  "org.scalikejdbc" %% "scalikejdbc-play-initializer" % "2.7.0-scalikejdbc-3.3"
+)
+
+// Security
+libraryDependencies += "org.springframework.security" % "spring-security-web" % "5.1.5.RELEASE"
+
+
 // The Play project itself
 lazy val root = (project in file("."))
   .enablePlugins(Common, PlayScala, GatlingPlugin)
@@ -30,12 +46,4 @@ lazy val root = (project in file("."))
   .settings(
     name := """scala-rest-ec-std""",
     scalaSource in GatlingTest := baseDirectory.value / "/gatling/simulation"
-  )
-
-// Documentation for this project:
-//    sbt "project docs" "~ paradox"
-//    open docs/target/paradox/site/index.html
-lazy val docs = (project in file("docs")).enablePlugins(ParadoxPlugin).
-  settings(
-    paradoxProperties += ("download_url" -> "https://example.lightbend.com/v1/download/play-rest-api")
   )
