@@ -1,6 +1,19 @@
 GET        /                       controllers.HomeController.index
 
 ->         /v1/posts               v1.post.PostRouter
+->         /v1/user                v1.router.UserRouter
+
+# Auth
+->         /v1                     v1.router.AuthRouter
+->         /v1                     v1.router.AuthRouter
+
+# Store
+# ->         /v1/store               v1.router.StoreRouter
+
+
+# Admin
+->         /v1/admin               v1.router.AdminUserRouter
+
 
 # Map static resources from the /public folder to the /assets URL path
 GET        /assets/*file        controllers.Assets.at(path="/public", file)
