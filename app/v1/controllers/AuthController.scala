@@ -58,19 +58,12 @@ class AuthController @Inject()(ecc: ECControllerComponents)(implicit ec: Executi
   def me: Action[AnyContent] = ECActionWithAuth.async {
     implicit request => {
       Future {
-        request.headers.get("Authorization-User-Screen") match {
-          case Some(screen_name) => {
-            User.findByScreenName(screen_name) match {
-              case Some(user) => {
-                Ok(Json.toJson(user))
-              }
-              case None => {
-                BadRequest("can not authenticate")
-              }
-            }
+        User.me(request) match {
+          case Some(user)=>{
+            Ok(Json.toJson(user))
           }
           case None => {
-            BadRequest("can not authenticate")
+            BadRequest
           }
         }
       }

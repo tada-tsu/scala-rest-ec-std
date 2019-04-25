@@ -1,5 +1,8 @@
 package models
 
+import play.api.data.Form
+import play.api.data.Forms.{mapping, nonEmptyText}
+import play.api.data.validation.Constraints
 import play.api.libs.json.{JsValue, Json, Writes}
 import scalikejdbc._
 
@@ -102,6 +105,17 @@ object Product extends SQLSyntaxSupport[Product] {
         }.map(Product(p.resultName)).single.apply()
     }
   }
+
+  def find(id: Int): Option[Product] = {
+    DB readOnly {
+      implicit session =>
+        withSQL {
+          select
+            .from(Product as p)
+            .where
+            .eq(p.id, id)
+            .limit(1)
+        }.map(Product(p.resultName)).single.apply()
+    }
+  }
 }
-
-

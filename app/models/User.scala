@@ -10,7 +10,11 @@ import play.api.data.Forms._
 import play.api.data.validation.Constraints
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
+import play.api.mvc.AnyContent
 import scalikejdbc._
+import v1.ECRequest
+
+import scala.concurrent.Future
 
 
 case class User(
@@ -259,6 +263,17 @@ object User extends SQLSyntaxSupport[User] {
           .limit(1)
       }.map(User(us.resultName)).single.apply
     }
+  }
+
+  def me(request:ECRequest[AnyContent]): Option[User] ={
+      request.headers.get("Authorization-User-Screen") match {
+        case Some(screen_name) => {
+          User.findByScreenName(screen_name)
+        }
+        case None => {
+          None
+        }
+      }
   }
 }
 

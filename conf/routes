@@ -9,7 +9,7 @@ GET        /                       controllers.HomeController.index
 # Store
 ->         /v1/store               v1.router.StoreOverviewRouter
 ->         /v1/store               v1.router.StoreProductRouter
-# ->         /v1/store               v1.router.StoreCartRouter
+->         /v1/store               v1.router.StoreCartRouter
 # ->         /v1/store               v1.router.StoreOrderRouter
 # ->         /v1/store               v1.router.StorePaymentRouter
 
