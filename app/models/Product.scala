@@ -1,6 +1,5 @@
 package models
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import play.api.libs.json.{JsValue, Json, Writes}
 import scalikejdbc._
 
@@ -88,6 +87,19 @@ object Product extends SQLSyntaxSupport[Product] {
           sale_price,
         )
       }
+    }
+  }
+
+  def getByPath(path: String): Option[Product] = {
+    DB readOnly {
+      implicit session =>
+        withSQL {
+          select
+            .from(Product as p)
+            .where
+            .eq(p.path, path)
+            .limit(1)
+        }.map(Product(p.resultName)).single.apply()
     }
   }
 }

@@ -5,10 +5,13 @@ GET        /                       controllers.HomeController.index
 
 # Auth
 ->         /v1                     v1.router.AuthRouter
-->         /v1                     v1.router.AuthRouter
 
 # Store
-# ->         /v1/store               v1.router.StoreRouter
+->         /v1/store               v1.router.StoreOverviewRouter
+->         /v1/store               v1.router.StoreProductRouter
+# ->         /v1/store               v1.router.StoreCartRouter
+# ->         /v1/store               v1.router.StoreOrderRouter
+# ->         /v1/store               v1.router.StorePaymentRouter
 
 
 # Admin
