@@ -5,7 +5,7 @@ import Home from './views/Home.vue'
 Vue.use(Router)
 
 export default new Router({
-  mode: 'history',
+  mode: 'hash',
   base: process.env.BASE_URL,
   routes: [
     {
@@ -19,52 +19,52 @@ export default new Router({
       // route level code-splitting
       // this generates a separate chunk (about.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: () => import(/* webpackChunkName: "about" */ './views/About.vue')
+      component: () => import('./views/Login.vue')
     },
     {
       path: "/register",
       name: "register",
-      component: ()=> import()
+      component: ()=> import('./views/About.vue')
     },
     {
       path: "/products",
       name: "products",
-      component: ()=> import()
+      component: ()=> import('./views/Products.vue')
     },
     {
       path: "/product/:product_path",
-      name: "product/:product_path",
-      component: ()=> import()
+      name: "product",
+      component: ()=> import('./views/ProductDetail.vue')
     },
     {
       path: "/cart",
       name: "cart",
-      component: ()=> import()
+      component: ()=> import('./views/Cart.vue')
     },
     {
       path: "/order/:order_id",
-      name: "order/:order_id",
-      component: ()=> import()
+      name: "order",
+      component: ()=> import('./views/About.vue')
     },
     {
       path: "/signout",
       name: "signout",
-      component: ()=> import()
+      component: ()=> import('./views/About.vue')
     },
     {
       path: "/mypage/me",
       name: "mypage.me",
-      component: ()=> import()
+      component: ()=> import('./views/MyPage.vue')
     },
     {
       path: "/mypage",
       name: "mypage",
-      component: ()=> import()
+      component: ()=> import('./views/About.vue')
     },
     {
       path: "/search",
       name: "search",
-      component: ()=> import()
+      component: ()=> import('./views/About.vue')
     },
   ]
 })

@@ -1,5 +1,4 @@
 module.exports = {
-    assetsDir: 'assets',
     runtimeCompiler: true,
 
     css: {
@@ -16,5 +15,22 @@ module.exports = {
 
                 return args
             });
+        config
+            .plugins.delete('copy')
+        // config
+        //     .plugin('copy')
+        //     .tap(args => {
+        //         args = [
+        //             [{
+        //                 from: '/src',
+        //                 to: '/public/asset/favicon.ico',
+        //                 toType: 'file',
+        //             }]
+        //         ]
+        //         return args
+        //     });
     },
+
+    outputDir: 'public',
+    assetsDir: 'assets'
 }
