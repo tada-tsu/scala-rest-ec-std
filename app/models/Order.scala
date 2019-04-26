@@ -17,8 +17,9 @@ object Order extends SQLSyntaxSupport[Order] {
     def writes(o: Order): JsValue = {
       Json.obj(
         "id" -> o.id,
-        "key" -> o.setting_key,
-        "value" -> o.value,
+        "user_id" -> o.user_id,
+        "status" -> o.status,
+        "amount" -> o.amount,
       )
     }
   }
@@ -30,5 +31,5 @@ object Order extends SQLSyntaxSupport[Order] {
     rs.int(r.amount),
   )
 
-  
+
 }
